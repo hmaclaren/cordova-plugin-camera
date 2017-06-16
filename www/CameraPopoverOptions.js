@@ -18,7 +18,7 @@
  * under the License.
  *
 */
-
+  
 var Camera = require('./Camera');
 
 /** 
