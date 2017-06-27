@@ -96,6 +96,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     public static final int SAVE_TO_ALBUM_SEC = 1;
 
     private static final String LOG_TAG = "CameraLauncher";
+    private static final String CAPTURE_FILE_NAME = ".Pic";
 
     //Where did this come from?
     private static final int CROP_CAMERA = 100;
@@ -335,7 +336,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     private File createCaptureFile(int encodingType, String fileName) {
         if (fileName.isEmpty()) {
-            fileName = ".Pic";
+            fileName = CAPTURE_FILE_NAME;
         }
 
         if (encodingType == JPEG) {
@@ -677,7 +678,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 return;
             }
         }
-        int rotate = 0;
+        
+      //  Uri tmpFile = FileProvider.getUriForFile(cordova.getActivity(),
+       //                         applicationId + ".provider",
+      //                          createCaptureFile(this.encodingType));
+
+       // int rotate = 0;
 
         String fileLocation = FileHelper.getRealPath(uri, this.cordova);
         LOG.d(LOG_TAG, "File locaton is: " + fileLocation);
@@ -706,6 +712,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     this.failPicture("Unable to retrieve path to picture!");
                     return;
                 }
+                
+                performCrop(uri, destType, intent);
+                
+                /*
                 Bitmap bitmap = null;
                 try {
                     bitmap = getScaledAndRotatedBitmap(uriString);
@@ -748,7 +758,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     bitmap.recycle();
                     bitmap = null;
                 }
-                System.gc();
+                
+                System.gc();*/
             }
         }
     }
