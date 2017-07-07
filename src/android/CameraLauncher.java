@@ -351,7 +351,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
         
-        //LOG.d(LOG_TAG, "createCaptureFile: returning ["+getTempDirectoryPath()+"]["+fileName+"]");
+        LOG.d(LOG_TAG, "createCaptureFile: returning ["+getTempDirectoryPath()+"]["+fileName+"]");
 
         return new File(getTempDirectoryPath(), fileName);
     }
@@ -419,11 +419,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
    *
    * @param picUri
    */
+   
   private void performCrop(Uri picUri, int destType, Intent cameraIntent) {
+    performCrop(picUri, destType, cameraIntent,false);
+  }
+   
+  private void performCrop(Uri picUri, int destType, Intent cameraIntent, boolean forceMedia) {
     try {
         Intent cropIntent = new Intent("com.android.camera.action.CROP");
 
-        Uri contentUri = getImageContentUri(cordova.getActivity(), picUri);
+        Uri contentUri = getImageContentUri(cordova.getActivity(), picUri, forceMedia);
 
         // indicate image type and Uri
         cropIntent.setDataAndType(contentUri, "image/*");
@@ -455,6 +460,21 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             this.cordova.startActivityForResult((CordovaPlugin) this,
                 cropIntent, CROP_CAMERA + destType);
         }
+    } catch (SecurityException se) {    
+        LOG.e(LOG_TAG, "Activity didn't have the right permissions. Trying forceMedia...");
+        if(!forceMedia) {
+            performCrop(picUri, destType, cameraIntent, true); // try once with forceMedia   
+        } else {
+            try {
+                processResultFromCamera(destType, cameraIntent);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+                LOG.e(LOG_TAG, "Unable to write to file");
+            }   
+        }
+        
     } catch (ActivityNotFoundException anfe) {
       LOG.e(LOG_TAG, "Crop operation not supported on this device");
       try {
@@ -467,16 +487,17 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
       }
     }
   }
-  
-  private Uri getImageContentUri(final Context context, final Uri uri) 
+   
+  private Uri getImageContentUri(final Context context, final Uri uri, boolean forceMedia) 
   {
     Uri result = null;
-    String filePath = uri.getPath();
-    String filePathWithSchema = uri.toString();
-    //LOG.d(LOG_TAG, "getImageContentUri ["+filePathWithSchema+"]");
-    
-    if (filePathWithSchema.startsWith("file://")) {
+    String filePath = FileHelper.getRealPath(uri, this.cordova);
+    String filePathWithSchema = uri.toString(); 
+    //LOG.d(LOG_TAG, "1getImageContentUri ["+filePathWithSchema+"]");
+    //LOG.d(LOG_TAG, "2getImageContentUri ["+filePath+"]");
 
+    if (forceMedia || filePathWithSchema.startsWith("file://")) {
+    
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 new String[] { MediaStore.Images.Media._ID },
@@ -485,9 +506,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         if (cursor != null && cursor.moveToFirst()) {
             //LOG.d(LOG_TAG, "getImageContentUri 1");
+
             int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
             Uri baseUri = Uri.parse("content://media/external/images/media");
-            result = Uri.withAppendedPath(baseUri, "" + id);
+            result = Uri.withAppendedPath(baseUri, "" + id);// + toadd);
         } else {
             //LOG.d(LOG_TAG, "getImageContentUri 2");
             File imageFile = new File(filePath);
@@ -499,9 +521,13 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.convertedUri = result;
             } 
         }
-    } else {
+    } 
+    
+    if(result == null) {
+        LOG.d(LOG_TAG, "getImageContentUri.result == null, setting to original uri");
         result = uri;
     }
+
     //LOG.d(LOG_TAG, "getImageContentUri returning["+((result!=null)?result.toString():"null")+"]");
     return result;
 }
