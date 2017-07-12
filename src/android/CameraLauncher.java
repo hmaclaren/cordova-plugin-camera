@@ -65,7 +65,6 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.support.v4.content.FileProvider;
 import android.util.Base64;
-//import android.util.Log;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 
@@ -351,7 +350,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
         
-        LOG.d(LOG_TAG, "createCaptureFile: returning ["+getTempDirectoryPath()+"]["+fileName+"]");
+        //LOG.d(LOG_TAG, "createCaptureFile: returning ["+getTempDirectoryPath()+"]["+fileName+"]");
 
         return new File(getTempDirectoryPath(), fileName);
     }
@@ -407,7 +406,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             intent.addCategory(Intent.CATEGORY_OPENABLE);
         }
         if (this.cordova != null) {
-            
             this.cordova.startActivityForResult((CordovaPlugin) this, Intent.createChooser(intent,
                     new String(title)), (srcType + 1) * 16 + returnType + 1);
         }
@@ -419,9 +417,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
    *
    * @param picUri
    */
-   
   private void performCrop(Uri picUri, int destType, Intent cameraIntent) {
-    performCrop(picUri, destType, cameraIntent,false);
+    performCrop(picUri, destType, cameraIntent, false);
   }
    
   private void performCrop(Uri picUri, int destType, Intent cameraIntent, boolean forceMedia) {
@@ -435,7 +432,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // set crop properties
         cropIntent.putExtra("crop", "true");
 
-        String fileLocation = FileHelper.getRealPath(contentUri, this.cordova);
+        //String fileLocation = FileHelper.getRealPath(contentUri, this.cordova);
         //LOG.d(LOG_TAG, "performCrop: contentUri == ["+fileLocation+"]");
 
         // indicate output X and Y
@@ -548,9 +545,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 FileHelper.stripFileProtocol(this.croppedUri.toString()) :
                 this.imageUri.getFilePath();
                 
-        LOG.d(LOG_TAG, "processResultFromCamera: croppedUri ["+((this.croppedUri != null)?this.croppedUri.toString():"null")+"]");
-        LOG.d(LOG_TAG, "processResultFromCamera: sourcePath ["+sourcePath+"]");
-
+        //LOG.d(LOG_TAG, "processResultFromCamera: croppedUri ["+((this.croppedUri != null)?this.croppedUri.toString():"null")+"]");
+        //LOG.d(LOG_TAG, "processResultFromCamera: sourcePath ["+sourcePath+"]");
 
         if (this.encodingType == JPEG) {
             try {
@@ -807,7 +803,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         }
                     }
                 }
-                
+
                 if((this.targetHeight < options.outHeight) || (this.targetWidth < options.outWidth)) {
                     performCrop(uri, destType, intent);  
                 } else {
@@ -838,7 +834,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         {
                             try {
                                 String modifiedPath = this.outputModifiedBitmap(bitmap, uri);
-                                //LOG.d(LOG_TAG,"modified path ["+modifiedPath+"]");
                                 // The modified image is cached by the app in order to get around this and not have to delete your
                                 // application cache I'm adding the current system time to the end of the file url.
                                 this.callbackContext.success("file://" + modifiedPath + "?" + System.currentTimeMillis());
@@ -928,7 +923,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             else {
                 this.failPicture("Did not complete!");
             }
-        } 
+        }
         // If retrieving photo from library
         else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
             if (resultCode == Activity.RESULT_OK && intent != null) {
@@ -965,7 +960,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             return 0;
         }
     }
-
+    
     /**
      * Write an inputstream to local disk
      *
@@ -1077,7 +1072,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
              We delete the temporary file once we are done
          */
          
-         LOG.d(LOG_TAG, "getScaledAndRotatedBitmap - copying to temporary file");
+         //LOG.d(LOG_TAG, "getScaledAndRotatedBitmap - copying to temporary file");
          
         File localFile = null;
         Uri galleryUri = null;
